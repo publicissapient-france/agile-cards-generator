@@ -12,17 +12,18 @@ def main():
 
     worksheet.write(0,0,text)
 
-    worksheet.write(2,0,'MMF:')
-    worksheet.write(2,1,'Feature:')
-    worksheet.write(2,2,'Projet:')
+    worksheet.merge_range(2,0,2,1,'MMF:')
+    worksheet.merge_range(2,2,2,3,'Feature:')
+    worksheet.merge_range(2,4,2,5,'Projet:')
 
-    worksheet.write(3,2,'Taille:')
+    worksheet.merge_range(3,0,3,3,'')
+    worksheet.merge_range(3,4,3,5,'Taille:')
 
-    worksheet.write(4,2,'Titre US')
+    worksheet.merge_range(4,0,4,5,'Titre US')
 
-    worksheet.write(5,0,'Date backlog')
-    worksheet.write(5,1,'Date dev')
-    worksheet.write(5,2,'Date done')
+    worksheet.merge_range(5,0,5,1,'Date backlog')
+    worksheet.merge_range(5,2,5,3,'Date dev')
+    worksheet.merge_range(5,4,5,5,'Date done')
 
     workbook.close()
 
