@@ -2,6 +2,22 @@ import os
 from xlsxwriter.workbook import Workbook
 import datetime
 
+
+def write_us_card(worksheet, starting_row=2, starting_column=2):
+    worksheet.merge_range(starting_row, 0, starting_row, 1, 'MMF:')
+    worksheet.merge_range(starting_row, 2, starting_row, 3, 'Feature:')
+    worksheet.merge_range(starting_row, 4, starting_row, 5, 'Projet:')
+
+    worksheet.merge_range(starting_row + 1, 0, starting_row + 1, 3, '')
+    worksheet.merge_range(starting_row + 1, 4, starting_row + 1, 5, 'Taille:')
+
+    worksheet.merge_range(starting_row + 2, 0, starting_row + 2, 5, 'Titre US')
+
+    worksheet.merge_range(starting_row + 3, 0, starting_row + 3, 1, 'Date backlog')
+    worksheet.merge_range(starting_row + 3, 2, starting_row + 3, 3, 'Date dev')
+    worksheet.merge_range(starting_row + 3, 4, starting_row + 3, 5, 'Date done')
+
+
 def main():
     file_name = prepare_output_file(None, 'xlsx')
 
@@ -12,18 +28,7 @@ def main():
 
     worksheet.write(0,0,text)
 
-    worksheet.merge_range(2,0,2,1,'MMF:')
-    worksheet.merge_range(2,2,2,3,'Feature:')
-    worksheet.merge_range(2,4,2,5,'Projet:')
-
-    worksheet.merge_range(3,0,3,3,'')
-    worksheet.merge_range(3,4,3,5,'Taille:')
-
-    worksheet.merge_range(4,0,4,5,'Titre US')
-
-    worksheet.merge_range(5,0,5,1,'Date backlog')
-    worksheet.merge_range(5,2,5,3,'Date dev')
-    worksheet.merge_range(5,4,5,5,'Date done')
+    write_us_card(worksheet)
 
     workbook.close()
 
