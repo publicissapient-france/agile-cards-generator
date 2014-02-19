@@ -6,7 +6,7 @@ import datetime
 def write_us_card(worksheet, starting_row=2, starting_column=0):
     worksheet.merge_range(starting_row, starting_column, starting_row, starting_column + 1, 'MMF:')
     worksheet.merge_range(starting_row, starting_column + 2, starting_row, starting_column + 3, 'Feature:')
-    worksheet.merge_range(starting_row, 4, starting_row, starting_column + 5, 'Projet:')
+    worksheet.merge_range(starting_row, starting_column + 4, starting_row, starting_column + 5, 'Projet:')
 
     worksheet.merge_range(starting_row + 1, starting_column + 0, starting_row + 1, starting_column + 3, '')
     worksheet.merge_range(starting_row + 1, starting_column + 4, starting_row + 1, starting_column + 5, 'Taille:')
@@ -29,6 +29,8 @@ def main():
     worksheet.write(0,0,text)
 
     write_us_card(worksheet)
+
+    write_us_card(worksheet, starting_column=7)
 
     workbook.close()
 
