@@ -1,8 +1,21 @@
 import os
+from xlsxwriter.workbook import Workbook
+import datetime
 
 def main():
-    file_name = prepare_output_file('output', 'xlsx')
-    print(file_name)
+    file_name = prepare_output_file(None, 'xlsx')
+
+    workbook = Workbook(file_name)
+    worksheet = workbook.add_worksheet()
+
+    text = 'hello world! The time is '+ datetime.datetime.now().__str__()
+
+    print(text)
+
+    worksheet.write(0,0,text)
+
+    workbook.close()
+
 
 def prepare_output_file(output_file, extension):
     file_name = None
