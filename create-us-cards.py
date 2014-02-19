@@ -8,13 +8,25 @@ def main():
     workbook = Workbook(file_name)
     worksheet = workbook.add_worksheet()
 
-    text = 'hello world! The time is '+ datetime.datetime.now().__str__()
-
-    print(text)
+    text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
 
     worksheet.write(0,0,text)
 
+    worksheet.write(2,0,'MMF:')
+    worksheet.write(2,1,'Feature:')
+    worksheet.write(2,2,'Projet:')
+
+    worksheet.write(3,2,'Taille:')
+
+    worksheet.write(4,2,'Titre US')
+
+    worksheet.write(5,0,'Date backlog')
+    worksheet.write(5,1,'Date dev')
+    worksheet.write(5,2,'Date done')
+
     workbook.close()
+
+    print(text)
 
 
 def prepare_output_file(output_file, extension):
@@ -23,12 +35,15 @@ def prepare_output_file(output_file, extension):
         file_name = output_file
     else:
         file_name = 'output.' + extension
+
     output_path = 'output'
     if not os.path.isdir(output_path):
         os.makedirs(output_path, exist_ok=True)
     file_name = os.path.join(output_path, file_name)
+
     if os.path.isfile(file_name):
         os.remove(file_name)
+
     return file_name
 
 
