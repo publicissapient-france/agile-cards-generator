@@ -1,6 +1,7 @@
 import os
 from xlsxwriter.workbook import Workbook
 import datetime
+import csv
 
 
 def write_us_card(worksheet, card, starting_row=0, starting_column=0):
@@ -32,6 +33,19 @@ class USCard():
         self.date_dev = date_dev
         self.date_done = date_done
 
+
+def load_cards():
+    cards = []
+    with open('cards.csv', encoding='utf8') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for row in csv_reader:
+            new_card = USCard(mmf=row[0], feature=row[1], project=row[2], size=row[3], title=row[4],
+                              date_backlog=row[5], date_dev=row[6], date_done=row[7])
+
+            cards.append(new_card)
+    return cards
+
+
 def main():
     file_name = prepare_output_file(None, 'xlsx')
 
@@ -42,12 +56,7 @@ def main():
 
     worksheet.write(0,0,text)
 
-    num_of_cards = 5
-    cards = []
-
-    for i in range(num_of_cards):
-        new_card = USCard(title='Titre US ' + i.__str__())
-        cards.append(new_card)
+    cards = load_cards()
 
     row = 0
     cards_per_line = 2
