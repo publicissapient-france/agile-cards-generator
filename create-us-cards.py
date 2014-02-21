@@ -59,23 +59,28 @@ def get_mins_maxs_from_range(range_string):
     return (min_col, min_row, max_col, max_row)
 
 
-def duplicate_cell(cell, worksheet, coordinate):
-    new_cell = worksheet.cell(coordinate)
+def duplicate_cell_with_offset(cell, worksheet=None, row=0, column=0):
+    if not worksheet:
+        worksheet = cell.parent
+
+    new_cell = cell.offset(row=row, column=column)
     new_cell.value = cell.value
-    # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
+        # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
     worksheet._styles[new_cell.address] = cell.style
 
     for range_string in worksheet._merged_cells:
         if cell.address == range_string.split(':')[0]:
 
             min_col, min_row, max_col, max_row = get_mins_maxs_from_range(range_string)
-            row_offset = max_row - min_row
-            column_offset = max_col - min_col
-            worksheet.merge_cells('%s:%s' % (new_cell.address, new_cell.offset(row=row_offset, column=column_offset).address))
+            rows_in_range = max_row - min_row + 1
+            columns_in_range = max_col - min_col + 1
+            worksheet.merge_cells('%s:%s' % (new_cell.address,
+                                             new_cell.offset(row=rows_in_range - 1,
+                                                             column=columns_in_range - 1).address))
 
             # For some reason need also to apply style to each of the merged cells
-            for r_offset in range(row_offset + 1):
-                for c_offset in range(column_offset + 1):
+            for r_offset in range(rows_in_range):
+                for c_offset in range(columns_in_range):
                     worksheet._styles[new_cell.offset(row=r_offset, column=c_offset).address] = cell.style
 
 
@@ -90,10 +95,11 @@ def main():
     my_workbook = openpyxl.load_workbook(input_file_name)
 
     my_worksheet = my_workbook.get_sheet_by_name(my_workbook.get_sheet_names()[0])
-    my_cell = my_worksheet.cell('A1')
 
-    duplicate_cell(my_cell, my_worksheet, 'A8')
-    duplicate_cell(my_cell, my_worksheet, 'A9')
+    for row in range(4):
+        for column in range(6):
+            my_cell = my_worksheet.cell(row=row, column=column)
+            duplicate_cell_with_offset(my_cell, row=0, column=7)
 
     print(my_worksheet._merged_cells)
 
