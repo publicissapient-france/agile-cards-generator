@@ -1,7 +1,6 @@
 import os
 from openpyxl.cell import coordinate_from_string, column_index_from_string
 
-from xlsxwriter.workbook import Workbook
 import openpyxl
 import datetime
 import csv
@@ -104,34 +103,6 @@ def main():
     my_workbook.save(output_file_name)
 
     text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
-
-    print(text)
-
-def main_xlswriter():
-    file_name = prepare_output_file(None, 'xlsx')
-
-    workbook = Workbook(file_name)
-    worksheet = workbook.add_worksheet()
-
-    text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
-
-    worksheet.write(0,0,text)
-
-    cards = load_cards()
-
-    row = 0
-    cards_per_line = 2
-    card_position_on_line = 0
-
-    for card in cards:
-        write_us_card(worksheet, card, starting_row=row, starting_column=card_position_on_line * 7)
-        card_position_on_line += 1
-
-        if card_position_on_line == cards_per_line:
-            card_position_on_line = 0
-            row += 5
-
-    workbook.close()
 
     print(text)
 
