@@ -1,5 +1,7 @@
 import os
+
 from xlsxwriter.workbook import Workbook
+import openpyxl
 import datetime
 import csv
 
@@ -36,7 +38,9 @@ class USCard():
 
 def load_cards():
     cards = []
-    with open('cards.csv', encoding='utf8') as csv_file:
+
+    file_name = os.path.join('test-input-file', 'cards.csv')
+    with open(file_name, encoding='utf8') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             new_card = USCard(mmf=row[0], feature=row[1], project=row[2], size=row[3], title=row[4],
@@ -47,6 +51,20 @@ def load_cards():
 
 
 def main():
+    output_file_name = prepare_output_file(None, 'xlsx')
+
+    input_file_name = os.path.join('input', 'input.xlsx')
+
+    workbook = openpyxl.load_workbook(input_file_name)
+
+    print(workbook.get_sheet_names())
+
+    text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
+
+
+    print(text)
+
+def main_xlswriter():
     file_name = prepare_output_file(None, 'xlsx')
 
     workbook = Workbook(file_name)
