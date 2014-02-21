@@ -57,7 +57,7 @@ def main():
 
     workbook = openpyxl.load_workbook(input_file_name)
 
-    print(workbook.get_sheet_names())
+    workbook.save(output_file_name)
 
     text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
 
