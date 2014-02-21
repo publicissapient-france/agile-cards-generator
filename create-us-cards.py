@@ -55,12 +55,21 @@ def main():
 
     input_file_name = os.path.join('input', 'input.xlsx')
 
-    workbook = openpyxl.load_workbook(input_file_name)
+    my_workbook = openpyxl.load_workbook(input_file_name)
 
-    workbook.save(output_file_name)
+    my_worksheet = my_workbook.get_sheet_by_name(my_workbook.get_sheet_names()[0])
+    my_cell = my_worksheet.cell('A1')
+    new_cell = my_worksheet.cell('A8')
+    new_cell.value = my_cell.value
+
+    # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
+
+    my_worksheet._styles[new_cell.get_coordinate()] = my_cell.style
+
+
+    my_workbook.save(output_file_name)
 
     text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
-
 
     print(text)
 
