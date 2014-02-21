@@ -101,9 +101,6 @@ def main():
             my_cell = my_worksheet.cell(row=row, column=column)
             duplicate_cell_with_offset(my_cell, row=0, column=7)
 
-    print(my_worksheet._merged_cells)
-
-
     my_workbook.save(output_file_name)
 
     text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
