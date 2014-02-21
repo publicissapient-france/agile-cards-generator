@@ -34,9 +34,14 @@ def write_us_cards(workbook, cards):
 
     vertical_position = 0
     horizontal_position = 0
+    cards_per_row = 2
     for card in cards:
         write_us_card(card, my_worksheet, vertical_position, horizontal_position)
         horizontal_position += 1
+        if horizontal_position == cards_per_row:
+            horizontal_position = 0
+            vertical_position += 1
+
 
 class USCard():
 
