@@ -9,13 +9,15 @@ import csv
 def write_us_card(card, worksheet, vertical_position=0, horizontal_position=0):
     card_row_height = 4
     card_column_width = 6
+    row_offset = vertical_position * (card_row_height + 1)
+    column_offset = horizontal_position * (card_column_width + 1)
     value = None
     for row in range(card_row_height):
         for column in range(card_column_width):
             my_cell = worksheet.cell(row=row, column=column)
-            duplicate_cell_with_offset(my_cell, row=vertical_position * (card_row_height + 1),
-                                       column=horizontal_position * (card_column_width + 1))
-    my_cell = worksheet.cell(row=0, column=0)
+            duplicate_cell_with_offset(my_cell, row=row_offset,
+                                       column=column_offset)
+    my_cell = worksheet.cell(row=row_offset, column=column_offset)
     my_cell.value = card.mmf
     my_cell.offset(0, 2).value = card.feature
     my_cell.offset(0, 4).value = card.project
@@ -34,6 +36,7 @@ def write_us_cards(workbook, cards):
     horizontal_position = 0
     for card in cards:
         write_us_card(card, my_worksheet, vertical_position, horizontal_position)
+        horizontal_position += 1
 
 class USCard():
 
