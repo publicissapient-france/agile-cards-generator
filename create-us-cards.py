@@ -63,7 +63,7 @@ def duplicate_cell(cell, worksheet, coordinate):
     new_cell = worksheet.cell(coordinate)
     new_cell.value = cell.value
     # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
-    worksheet._styles[new_cell.get_coordinate()] = cell.style
+    worksheet._styles[new_cell.address] = cell.style
 
     for range_string in worksheet._merged_cells:
         if cell.address == range_string.split(':')[0]:
@@ -72,6 +72,12 @@ def duplicate_cell(cell, worksheet, coordinate):
             row_offset = max_row - min_row
             column_offset = max_col - min_col
             worksheet.merge_cells('%s:%s' % (new_cell.address, new_cell.offset(row=row_offset, column=column_offset).address))
+
+            # For some reason need also to apply style to each of the merged cells
+            for r_offset in range(row_offset + 1):
+                for c_offset in range(column_offset + 1):
+                    worksheet._styles[new_cell.offset(row=r_offset, column=c_offset).address] = cell.style
+
 
     return new_cell
 
