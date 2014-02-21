@@ -1,4 +1,5 @@
 import os
+from openpyxl.cell import coordinate_from_string, column_index_from_string
 
 from xlsxwriter.workbook import Workbook
 import openpyxl
@@ -50,6 +51,31 @@ def load_cards():
     return cards
 
 
+def get_mins_maxs_from_range(range_string):
+    min_col, min_row = coordinate_from_string(range_string.split(':')[0])
+    max_col, max_row = coordinate_from_string(range_string.split(':')[1])
+    min_col = column_index_from_string(min_col)
+    max_col = column_index_from_string(max_col)
+    return (min_col, min_row, max_col, max_row)
+
+
+def duplicate_cell(cell, worksheet, coordinate):
+    new_cell = worksheet.cell(coordinate)
+    new_cell.value = cell.value
+    # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
+    worksheet._styles[new_cell.get_coordinate()] = cell.style
+
+    for range_string in worksheet._merged_cells:
+        if cell.address == range_string.split(':')[0]:
+
+            min_col, min_row, max_col, max_row = get_mins_maxs_from_range(range_string)
+            row_offset = max_row - min_row
+            column_offset = max_col - min_col
+            worksheet.merge_cells('%s:%s' % (new_cell.address, new_cell.offset(row=row_offset, column=column_offset).address))
+
+    return new_cell
+
+
 def main():
     output_file_name = prepare_output_file(None, 'xlsx')
 
@@ -59,12 +85,11 @@ def main():
 
     my_worksheet = my_workbook.get_sheet_by_name(my_workbook.get_sheet_names()[0])
     my_cell = my_worksheet.cell('A1')
-    new_cell = my_worksheet.cell('A8')
-    new_cell.value = my_cell.value
 
-    # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
+    duplicate_cell(my_cell, my_worksheet, 'A8')
+    duplicate_cell(my_cell, my_worksheet, 'A9')
 
-    my_worksheet._styles[new_cell.get_coordinate()] = my_cell.style
+    print(my_worksheet._merged_cells)
 
 
     my_workbook.save(output_file_name)
