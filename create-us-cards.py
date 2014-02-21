@@ -91,9 +91,10 @@ def duplicate_cell_with_offset(cell, worksheet=None, row=0, column=0):
             # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
         worksheet._styles[new_cell.address] = cell.style
 
-        print(coordinate_from_string(new_cell.address)[1])
         worksheet.row_dimensions[coordinate_from_string(new_cell.address)[1]] = \
             worksheet.row_dimensions[coordinate_from_string(cell.address)[1]]
+        worksheet.column_dimensions[coordinate_from_string(new_cell.address)[0]] = \
+            worksheet.column_dimensions[coordinate_from_string(cell.address)[0]]
 
         for range_string in worksheet._merged_cells:
             if cell.address == range_string.split(':')[0]:
