@@ -6,21 +6,34 @@ import datetime
 import csv
 
 
-def write_us_card(worksheet, card, starting_row=0, starting_column=0):
-    starting_row = starting_row + 2
+def write_us_card(card, worksheet, vertical_position=0, horizontal_position=0):
+    card_row_height = 4
+    card_column_width = 6
+    value = None
+    for row in range(card_row_height):
+        for column in range(card_column_width):
+            my_cell = worksheet.cell(row=row, column=column)
+            duplicate_cell_with_offset(my_cell, row=vertical_position * (card_row_height + 1),
+                                       column=horizontal_position * (card_column_width + 1))
+    my_cell = worksheet.cell(row=0, column=0)
+    my_cell.value = card.mmf
+    my_cell.offset(0, 2).value = card.feature
+    my_cell.offset(0, 4).value = card.project
+    my_cell.offset(1, 4).value = card.size
+    my_cell.offset(2, 0).value = card.title
+    my_cell.offset(3, 0).value = card.date_backlog
+    my_cell.offset(3, 2).value = card.date_dev
+    my_cell.offset(3, 4).value = card.date_done
 
-    worksheet.merge_range(starting_row, starting_column, starting_row, starting_column + 1, card.mmf)
-    worksheet.merge_range(starting_row, starting_column + 2, starting_row, starting_column + 3, card.feature)
-    worksheet.merge_range(starting_row, starting_column + 4, starting_row, starting_column + 5, card.project)
 
-    worksheet.merge_range(starting_row + 1, starting_column + 0, starting_row + 1, starting_column + 3, '')
-    worksheet.merge_range(starting_row + 1, starting_column + 4, starting_row + 1, starting_column + 5, card.size)
 
-    worksheet.merge_range(starting_row + 2, starting_column, starting_row + 2, starting_column + 5, card.title)
+def write_us_cards(workbook, cards):
+    my_worksheet = workbook.get_sheet_by_name('US')
 
-    worksheet.merge_range(starting_row + 3, starting_column, starting_row + 3, starting_column + 1, card.date_backlog)
-    worksheet.merge_range(starting_row + 3, starting_column + 2, starting_row + 3, starting_column + 3, card.date_dev)
-    worksheet.merge_range(starting_row + 3, starting_column + 4, starting_row + 3, starting_column + 5, card.date_done)
+    vertical_position = 0
+    horizontal_position = 0
+    for card in cards:
+        write_us_card(card, my_worksheet, vertical_position, horizontal_position)
 
 class USCard():
 
@@ -62,25 +75,28 @@ def duplicate_cell_with_offset(cell, worksheet=None, row=0, column=0):
     if not worksheet:
         worksheet = cell.parent
 
-    new_cell = cell.offset(row=row, column=column)
-    new_cell.value = cell.value
-        # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
-    worksheet._styles[new_cell.address] = cell.style
+    if row == 0 and column == 0:
+        new_cell = cell
+    else:
+        new_cell = cell.offset(row=row, column=column)
+        new_cell.value = cell.value
+            # used info on https://groups.google.com/forum/#!topic/openpyxl-users/s27khYlovwU
+        worksheet._styles[new_cell.address] = cell.style
 
-    for range_string in worksheet._merged_cells:
-        if cell.address == range_string.split(':')[0]:
+        for range_string in worksheet._merged_cells:
+            if cell.address == range_string.split(':')[0]:
 
-            min_col, min_row, max_col, max_row = get_mins_maxs_from_range(range_string)
-            rows_in_range = max_row - min_row + 1
-            columns_in_range = max_col - min_col + 1
-            worksheet.merge_cells('%s:%s' % (new_cell.address,
-                                             new_cell.offset(row=rows_in_range - 1,
-                                                             column=columns_in_range - 1).address))
+                min_col, min_row, max_col, max_row = get_mins_maxs_from_range(range_string)
+                rows_in_range = max_row - min_row + 1
+                columns_in_range = max_col - min_col + 1
+                worksheet.merge_cells('%s:%s' % (new_cell.address,
+                                                 new_cell.offset(row=rows_in_range - 1,
+                                                                 column=columns_in_range - 1).address))
 
-            # For some reason need also to apply style to each of the merged cells
-            for r_offset in range(rows_in_range):
-                for c_offset in range(columns_in_range):
-                    worksheet._styles[new_cell.offset(row=r_offset, column=c_offset).address] = cell.style
+                # For some reason need also to apply style to each of the merged cells
+                for r_offset in range(rows_in_range):
+                    for c_offset in range(columns_in_range):
+                        worksheet._styles[new_cell.offset(row=r_offset, column=c_offset).address] = cell.style
 
 
     return new_cell
@@ -93,12 +109,10 @@ def main():
 
     my_workbook = openpyxl.load_workbook(input_file_name)
 
-    my_worksheet = my_workbook.get_sheet_by_name(my_workbook.get_sheet_names()[0])
+    cards = load_cards()
 
-    for row in range(4):
-        for column in range(6):
-            my_cell = my_worksheet.cell(row=row, column=column)
-            duplicate_cell_with_offset(my_cell, row=0, column=7)
+    write_us_cards(my_workbook, cards)
+
 
     my_workbook.save(output_file_name)
 
