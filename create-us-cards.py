@@ -83,17 +83,17 @@ class USCard():
         self.date_done = date_done
 
 
-def load_cards():
+def load_cards(workbook):
     cards = []
 
-    file_name = os.path.join('test-input-file', 'cards.csv')
-    with open(file_name, encoding='utf8') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        for row in csv_reader:
-            new_card = USCard(mmf=row[0], feature=row[1], project=row[2], size=row[3], title=row[4],
-                              date_backlog=row[5], date_dev=row[6], date_done=row[7])
-
+    header_row_handled = False
+    for row in workbook.get_sheet_by_name('US Data').rows:
+        if not header_row_handled:
+            header_row_handled = True
+        else:
+            new_card = USCard(mmf=row[0].value, feature=row[1].value, project=row[2].value, size=row[3].value, title=row[4].value, date_backlog=row[5].value, date_dev=row[6].value, date_done=row[7].value)
             cards.append(new_card)
+
     return cards
 
 
@@ -148,11 +148,14 @@ def main():
 
     my_workbook = openpyxl.load_workbook(input_file_name)
 
-    cards = load_cards()
+    cards = load_cards(my_workbook)
 
     write_us_cards(my_workbook, cards)
 
-    my_workbook.active = my_workbook.get_index(my_workbook.get_sheet_by_name('US'))
+    my_us_worksheet = my_workbook.get_sheet_by_name('US')
+    my_workbook.active = my_workbook.get_index(my_us_worksheet)
+    my_us_worksheet.page_setup.fitToPage = True
+    my_us_worksheet.page_setup.fitToHeight = 0
 
 
     my_workbook.save(output_file_name)
