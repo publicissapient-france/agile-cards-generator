@@ -252,9 +252,7 @@ def main():
 
     write_us_cards(my_workbook, project_cards_data, card_worksheets_properties)
 
-    # TODO refactor this so that there is only one us_worksheet_name for everyone
-    us_worksheet_name = 'US'
-    setup_worksheet_page(my_workbook, us_worksheet_name, project_cards_data, card_worksheets_properties)
+    setup_worksheet_page(my_workbook, US_CARD_NAME, project_cards_data, card_worksheets_properties)
 
     my_workbook.save(output_file_name)
 
