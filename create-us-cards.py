@@ -1,19 +1,18 @@
 import os
-from openpyxl.cell import coordinate_from_string, column_index_from_string
+from openpyxl.cell import coordinate_from_string, column_index_from_string, get_column_letter
 
 import openpyxl
 import datetime
 import csv
 
 
+
 def write_us_card(card, worksheet, vertical_position=0, horizontal_position=0):
-    card_row_height = 4
-    card_column_width = 6
-    row_offset = vertical_position * (card_row_height + 1)
-    column_offset = horizontal_position * (card_column_width + 1)
-    value = None
-    for row in range(card_row_height):
-        for column in range(card_column_width):
+    row_offset = vertical_position * (USCard.ROW_HEIGHT + 1)
+    column_offset = horizontal_position * (USCard.COLUMN_WIDTH + 1)
+
+    for row in range(USCard.ROW_HEIGHT):
+        for column in range(USCard.COLUMN_WIDTH):
             my_cell = worksheet.cell(row=row, column=column)
             duplicate_cell_with_offset(my_cell, row=row_offset,
                                        column=column_offset)
@@ -28,13 +27,13 @@ def write_us_card(card, worksheet, vertical_position=0, horizontal_position=0):
     my_cell.offset(3, 4).value = card.date_done
 
 
-
 def write_us_cards(workbook, cards):
     my_worksheet = workbook.get_sheet_by_name('US')
 
     vertical_position = 0
     horizontal_position = 0
     cards_per_row = 2
+
     for card in cards:
         write_us_card(card, my_worksheet, vertical_position, horizontal_position)
         horizontal_position += 1
@@ -42,8 +41,20 @@ def write_us_cards(workbook, cards):
             horizontal_position = 0
             vertical_position += 1
 
+    for i in range(1, cards_per_row):
+        column_letter = get_column_letter(i * (USCard.COLUMN_WIDTH + 1))
+        my_width = float(1)
+
+        if column_letter in my_worksheet.column_dimensions:
+            my_worksheet.column_dimensions[column_letter].width = my_width
+        else:
+            my_worksheet.column_dimensions[column_letter] = openpyxl.worksheet.ColumnDimension(width=my_width)
+
 
 class USCard():
+
+    ROW_HEIGHT = 4
+    COLUMN_WIDTH = 6
 
     def __init__(self, mmf='MMF:', feature='Feature:', project='Projet:', size='Taille', title='Titre de la US',
                           date_backlog='Date backlog:', date_dev='Date dev:', date_done='Date done'):
