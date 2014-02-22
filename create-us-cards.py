@@ -27,8 +27,9 @@ def write_us_card(card, worksheet, vertical_position=0, horizontal_position=0):
     my_cell.offset(3, 4).value = card.date_done
 
 
-def write_us_cards(workbook, cards):
+def write_us_cards(workbook, project_cards):
     my_worksheet = workbook.get_sheet_by_name('US')
+    cards = project_cards.us_cards
 
     vertical_position = 0
     horizontal_position = 0
@@ -66,6 +67,12 @@ def write_us_cards(workbook, cards):
 
 
 
+class ProjectCards():
+
+    def __init__(self, us_cards=None):
+        self.us_cards = us_cards
+
+
 class USCard():
 
     ROW_HEIGHT = 4
@@ -84,7 +91,7 @@ class USCard():
 
 
 def load_cards(workbook):
-    cards = []
+    us_cards = []
 
     header_row_handled = False
     for row in workbook.get_sheet_by_name('US Data').rows:
@@ -92,9 +99,9 @@ def load_cards(workbook):
             header_row_handled = True
         else:
             new_card = USCard(mmf=row[0].value, feature=row[1].value, project=row[2].value, size=row[3].value, title=row[4].value, date_backlog=row[5].value, date_dev=row[6].value, date_done=row[7].value)
-            cards.append(new_card)
+            us_cards.append(new_card)
 
-    return cards
+    return ProjectCards(us_cards)
 
 
 def get_mins_maxs_from_range(range_string):
@@ -141,19 +148,10 @@ def duplicate_cell_with_offset(cell, worksheet=None, row=0, column=0):
     return new_cell
 
 
-def main():
-    output_file_name = prepare_output_file(None, 'xlsx')
-
-    input_file_name = os.path.join('input', 'input.xlsx')
-
-    my_workbook = openpyxl.load_workbook(input_file_name)
-
-    cards = load_cards(my_workbook)
-
-    write_us_cards(my_workbook, cards)
-
-    my_us_worksheet = my_workbook.get_sheet_by_name('US')
+def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards):
+    my_us_worksheet = my_workbook.get_sheet_by_name(us_worksheet_name)
     my_workbook.active = my_workbook.get_index(my_us_worksheet)
+
     my_us_worksheet.page_setup.fitToPage = True
     my_us_worksheet.page_setup.fitToHeight = 0
 
@@ -161,6 +159,29 @@ def main():
     my_us_worksheet.page_margins.right = 0.1
     my_us_worksheet.page_margins.top = 0.1
     my_us_worksheet.page_margins.bottom = 0.1
+
+    lines_of_cards_per_page = 5
+    lines_of_card = len(list(range(2, len(project_cards.us_cards), 2))) + 1
+    print(lines_of_card)
+
+    for i in list(range(1, len(list(range(lines_of_cards_per_page, lines_of_card, lines_of_cards_per_page))) + 1)):
+        page_break_row_idx = i * ((lines_of_cards_per_page + 1) * USCard.ROW_HEIGHT + 1)
+        my_us_worksheet.page_breaks.append(page_break_row_idx)
+
+
+def main():
+    output_file_name = prepare_output_file(None, 'xlsx')
+
+    input_file_name = os.path.join('input', 'input.xlsx')
+
+    my_workbook = openpyxl.load_workbook(input_file_name)
+
+    project_cards = load_cards(my_workbook)
+
+    write_us_cards(my_workbook, project_cards)
+
+    us_worksheet_name = 'US'
+    setup_worksheet_page(my_workbook, us_worksheet_name, project_cards)
 
     my_workbook.save(output_file_name)
 
