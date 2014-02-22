@@ -11,7 +11,8 @@ DATA_SUFFIX = ' Data'
 TEMPLATE_SUFFIX = ' Template'
 
 
-def write_us_card(card, worksheet, starting_row, vertical_position=0, horizontal_position=0):
+def write_us_card(card, worksheet, card_worksheets_properties, starting_row, vertical_position=0,
+                  horizontal_position=0):
 
     def duplicate_cell_with_offset(cell, worksheet=None, row=0, column=0):
 
@@ -54,9 +55,9 @@ def write_us_card(card, worksheet, starting_row, vertical_position=0, horizontal
             duplicate_cell_merge_info(cell, new_cell, worksheet)
         return new_cell
 
-    def create_card_cells(starting_row, column_offset, row_offset, worksheet):
-        for row in range(USCard.ROW_HEIGHT):
-            for column in range(USCard.COLUMN_WIDTH):
+    def create_card_cells(starting_row, column_offset, row_offset, worksheet, card_worksheets_properties):
+        for row in range(card_worksheets_properties.us_properties.card_height):
+            for column in range(card_worksheets_properties.us_properties.card_width):
                 my_cell = worksheet.cell(row=row + starting_row, column=column)
                 duplicate_cell_with_offset(my_cell, row=row_offset,
                                            column=column_offset)
@@ -73,10 +74,10 @@ def write_us_card(card, worksheet, starting_row, vertical_position=0, horizontal
         my_cell.offset(3, 2).value = card.date_dev
         my_cell.offset(3, 4).value = card.date_done
 
-    row_offset = vertical_position * (USCard.ROW_HEIGHT + 1)
-    column_offset = horizontal_position * (USCard.COLUMN_WIDTH + 1)
+    row_offset = vertical_position * (card_worksheets_properties.us_properties.card_height + 1)
+    column_offset = horizontal_position * (card_worksheets_properties.us_properties.card_width + 1)
 
-    create_card_cells(starting_row, column_offset, row_offset, worksheet)
+    create_card_cells(starting_row, column_offset, row_offset, worksheet, card_worksheets_properties)
     duplicate_cells_value(card, starting_row, column_offset, row_offset, worksheet)
 
 
@@ -85,7 +86,7 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
 
     def set_intermediate_columns_width(cards_per_row, my_worksheet):
         for i in range(1, cards_per_row):
-            column_letter = get_column_letter(i * (USCard.COLUMN_WIDTH + 1))
+            column_letter = get_column_letter(i * (card_worksheets_properties.us_properties.card_width + 1))
             column_width = float(1)
 
             if column_letter in my_worksheet.column_dimensions:
@@ -97,7 +98,7 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
     def set_intermediate_rows_height(cards, cards_per_row, my_worksheet, row_height, starting_row):
         if len(cards) > cards_per_row:
             for i in list(range(1, len(list(range(cards_per_row, len(cards), cards_per_row))) + 1)):
-                row_idx = i * (USCard.ROW_HEIGHT + 1) + starting_row
+                row_idx = i * (card_worksheets_properties.us_properties.card_height + 1) + starting_row
 
                 my_worksheet.cell(row=row_idx - 1, column=0).value = ' '
 
@@ -125,7 +126,8 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
     starting_row = card_worksheets_properties.us_properties.nb_settings_rows
 
     for card in cards:
-        write_us_card(card, my_worksheet, starting_row, vertical_position, horizontal_position)
+        write_us_card(card, my_worksheet, card_worksheets_properties, starting_row, vertical_position,
+                      horizontal_position)
         horizontal_position += 1
         if horizontal_position == cards_per_row:
             horizontal_position = 0
@@ -143,21 +145,36 @@ class ProjectCardsData():
 
 
 class CardWorksheetsProperties():
+
+    NB_SETTING_ROWS_IDX = 0
+    CARD_HEIGHT_IDX = 1
+    CARD_WIDTH_IDX = 2
+    CARDS_PER_ROW_IDX = 3
+    LINES_OF_CARDS_PER_PAGE_IDX = 4
+
     def __init__(self, us_properties):
         self.us_properties = us_properties
 
 
 class CardWorksheetProperties():
-    def __init__(self, nb_settings_rows = 0, lines_of_cards_per_page = 5):
+
+    def __init__(self, nb_settings_rows = 0, card_height = None, card_width = None, cards_per_rows = None, lines_of_cards_per_page = None):
         self.nb_settings_rows = nb_settings_rows
+        self.card_height = card_height
+        self.card_width = card_width
+        self.cards_per_rows = cards_per_rows
         self.lines_of_cards_per_page = lines_of_cards_per_page
 
 
-class USCard():
+    def __repr__(self):
+        return "<" + type(self).__name__ + \
+               "(nb_settings_rows = '%s', card_height = '%s', card_width = '%s', cards_per_rows = '%s', lines_of_cards_per_page = '%s')>" \
+               % (self.nb_settings_rows, self.card_height, self.card_width, self.cards_per_rows,
+                  self.lines_of_cards_per_page)
 
-    # TODO move these two to CardsWorksheetProperties or other better place
-    ROW_HEIGHT = 4
-    COLUMN_WIDTH = 6
+
+
+class USCard():
 
     def __init__(self, mmf='MMF:', feature='Feature:', project='Projet:', size='Taille', title='Titre de la US',
                           date_backlog='Date backlog:', date_dev='Date dev:', date_done='Date done'):
@@ -186,8 +203,14 @@ def load_cards(workbook):
 
 def extract_cards_worksheet_properties(workbook):
     my_worksheet = workbook.get_sheet_by_name(US_CARD_NAME + TEMPLATE_SUFFIX)
-    us_properties = CardWorksheetProperties(nb_settings_rows=my_worksheet.cell(row=0, column=1).value,
-                                             lines_of_cards_per_page=my_worksheet.cell(row=1, column=1).value)
+    us_properties = CardWorksheetProperties()
+    us_properties.nb_settings_rows = my_worksheet.cell(row=CardWorksheetsProperties.NB_SETTING_ROWS_IDX, column=1).value
+    us_properties.card_height = my_worksheet.cell(row=CardWorksheetsProperties.CARD_HEIGHT_IDX, column=1).value
+    us_properties.card_width = my_worksheet.cell(row=CardWorksheetsProperties.CARD_WIDTH_IDX, column=1).value
+    us_properties.cards_per_rows = my_worksheet.cell(row=CardWorksheetsProperties.CARDS_PER_ROW_IDX, column=1).value
+    us_properties.lines_of_cards_per_page=my_worksheet.cell(row=CardWorksheetsProperties.LINES_OF_CARDS_PER_PAGE_IDX,
+                                                            column=1).value
+
     return CardWorksheetsProperties(us_properties)
 
 
@@ -221,7 +244,7 @@ def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards_data, car
         nb_of_page_breaks = len(list(range(lines_of_cards_per_page, lines_of_card, lines_of_cards_per_page)))
 
         for i in range(1, nb_of_page_breaks + 1):
-            page_break_row_idx = i * ((lines_of_cards_per_page + 1) * USCard.ROW_HEIGHT + 2) + nb_settings_rows
+            page_break_row_idx = i * ((lines_of_cards_per_page + 1) * card_worksheets_properties.us_properties.card_height + 2) + nb_settings_rows
             my_worksheet.page_breaks.append(page_break_row_idx)
 
 
