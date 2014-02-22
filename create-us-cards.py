@@ -7,6 +7,7 @@ from copy import deepcopy
 import csv
 
 US_CARD_NAME = 'US'
+FEATURE_CARD_NAME = 'Feature'
 DATA_SUFFIX = ' Data'
 TEMPLATE_SUFFIX = ' Template'
 
@@ -138,10 +139,48 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
     set_intermediate_rows_height(cards, cards_per_row, my_worksheet, row_height, starting_row)
 
 
+class USCard():
+
+    ID = 'ID'
+    MMF = 'MMF'
+    FEATURE = 'FEATURE'
+    PROJECT = 'PROJECT'
+    SIZE = 'SIZE'
+    TITLE = 'TITLE'
+    DATE_BACKLOG = 'DATE_BACKLOG'
+    DATE_DEV = 'DATE_DEV'
+    DATE_DONE = 'DATE_DONE'
+
+    DATA_HEADERS = ('ID', 'MMF', 'FEATURE', 'PROJECT', 'SIZE', 'TITLE', 'DATE_BACKLOG', 'DATE_DEV', 'DATE_DONE')
+
+    def __init__(self, id='ID:', mmf='MMF:', feature='Feature:', project='Projet:', size='Taille', title='Titre de la US',
+                          date_backlog='Date backlog:', date_dev='Date dev:', date_done='Date done'):
+        self.id = id
+        self.mmf = mmf
+        self.feature = feature
+        self.project = project
+        self.size = size
+        self.title = title
+        self.date_backlog = date_backlog
+        self.date_dev = date_dev
+        self.date_done = date_done
+
+
+class Cards():
+
+    def __init__(self):
+        self.attributes = []
+
+    def __repr__(self):
+        return "<" + type(self).__name__ + "(attributes = '%s')>" % (self.attributes)
+
+
+
 class ProjectCardsData():
 
-    def __init__(self, us_cards=None):
+    def __init__(self, us_cards=None, feature_cards=None):
         self.us_cards = us_cards
+        self.feature_cards = feature_cards
 
 
 class CardWorksheetsProperties():
@@ -173,36 +212,49 @@ class CardWorksheetProperties():
                   self.lines_of_cards_per_page)
 
 
-
-class USCard():
-
-    def __init__(self, id='ID:', mmf='MMF:', feature='Feature:', project='Projet:', size='Taille', title='Titre de la US',
-                          date_backlog='Date backlog:', date_dev='Date dev:', date_done='Date done'):
-        self.id = id
-        self.mmf = mmf
-        self.feature = feature
-        self.project = project
-        self.size = size
-        self.title = title
-        self.date_backlog = date_backlog
-        self.date_dev = date_dev
-        self.date_done = date_done
-
-
 def load_cards(workbook):
-    us_cards = []
 
-    header_row_handled = False
-    for row in workbook.get_sheet_by_name(US_CARD_NAME + DATA_SUFFIX).rows:
-        if not header_row_handled:
-            header_row_handled = True
-        else:
-            new_card = USCard(id=row[0].value, mmf=row[1].value, feature=row[2].value, project=row[3].value,
-                              size=row[4].value, title=row[5].value, date_backlog=row[6].value, date_dev=row[7].value,
-                              date_done=row[8].value)
-            us_cards.append(new_card)
 
-    return ProjectCardsData(us_cards)
+    def load_us_cards(workbook):
+        us_cards = []
+        header_row_handled = False
+        data_header_col_idx = {}
+        for row in workbook.get_sheet_by_name(US_CARD_NAME + DATA_SUFFIX).rows:
+            if not header_row_handled:
+                for cell in row:
+                    if cell.value in USCard.DATA_HEADERS:
+                        data_header_col_idx[cell.value] = column_index_from_string(cell.column) - 1
+                header_row_handled = True
+            else:
+                new_card = USCard(id=row[data_header_col_idx[USCard.ID]].value,
+                                  mmf=row[data_header_col_idx[USCard.MMF]].value,
+                                  feature=row[data_header_col_idx[USCard.FEATURE]].value,
+                                  project=row[data_header_col_idx[USCard.PROJECT]].value,
+                                  size=row[data_header_col_idx[USCard.SIZE]].value,
+                                  title=row[data_header_col_idx[USCard.TITLE]].value,
+                                  date_backlog=row[data_header_col_idx[USCard.DATE_BACKLOG]].value,
+                                  date_dev=row[data_header_col_idx[USCard.DATE_DEV]].value,
+                                  date_done=row[data_header_col_idx[USCard.DATE_DONE]].value)
+                us_cards.append(new_card)
+        return us_cards
+
+
+    def load_feature_cards(workbook):
+        feature_cards = Cards()
+        header_row_handled = False
+        for row in workbook.get_sheet_by_name(FEATURE_CARD_NAME + DATA_SUFFIX).rows:
+            if not header_row_handled:
+                for cell in row:
+                    if cell.value:
+                        feature_cards.attributes.append(cell.value)
+                header_row_handled = True
+        return feature_cards
+
+
+    us_cards = load_us_cards(workbook)
+    feature_cards = load_feature_cards(workbook)
+
+    return ProjectCardsData(us_cards, feature_cards)
 
 def extract_cards_worksheet_properties(workbook):
     my_worksheet = workbook.get_sheet_by_name(US_CARD_NAME + TEMPLATE_SUFFIX)
