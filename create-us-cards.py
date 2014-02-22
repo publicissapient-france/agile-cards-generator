@@ -3,6 +3,7 @@ from openpyxl.cell import coordinate_from_string, column_index_from_string, get_
 
 import openpyxl
 import datetime
+from copy import deepcopy
 import csv
 
 
@@ -28,7 +29,12 @@ def write_us_card(card, worksheet, vertical_position=0, horizontal_position=0):
 
 
 def write_us_cards(workbook, project_cards):
-    my_worksheet = workbook.get_sheet_by_name('US')
+    us_worksheet_name = 'US'
+
+    my_worksheet = deepcopy(workbook.get_sheet_by_name(us_worksheet_name + ' Template'))
+    my_worksheet.title = us_worksheet_name
+    workbook.add_sheet(my_worksheet)
+
     cards = project_cards.us_cards
 
     vertical_position = 0
@@ -171,7 +177,6 @@ def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards):
 
 def main():
     output_file_name = prepare_output_file(None, 'xlsx')
-
     input_file_name = os.path.join('input', 'input.xlsx')
 
     my_workbook = openpyxl.load_workbook(input_file_name)
@@ -180,6 +185,7 @@ def main():
 
     write_us_cards(my_workbook, project_cards)
 
+    # TODO refactor this so that there is only one us_worksheet_name for everyone
     us_worksheet_name = 'US'
     setup_worksheet_page(my_workbook, us_worksheet_name, project_cards)
 
