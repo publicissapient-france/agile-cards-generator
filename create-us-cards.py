@@ -55,14 +55,11 @@ def write_us_cards(workbook, cards):
 
         for i in list(range(1, len(list(range(cards_per_row, len(cards), cards_per_row))) + 1)):
             row_idx = i * (USCard.ROW_HEIGHT + 1)
-            print(row_idx)
             a_cell = my_worksheet.cell(row=row_idx - 1, column=0)
-            a_cell.value = 'here i am'
+            a_cell.value = ' '
             if row_idx in my_worksheet.row_dimensions:
-                print('exists')
                 my_worksheet.row_dimensions[row_idx].height = my_height
             else:
-                print('exists not')
                 my_row_dimension = openpyxl.worksheet.RowDimension()
                 my_row_dimension.height = my_height
                 my_worksheet.row_dimensions[row_idx] = my_row_dimension
@@ -154,6 +151,8 @@ def main():
     cards = load_cards()
 
     write_us_cards(my_workbook, cards)
+
+    my_workbook.active = my_workbook.get_index(my_workbook.get_sheet_by_name('US'))
 
 
     my_workbook.save(output_file_name)
