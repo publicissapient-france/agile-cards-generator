@@ -50,6 +50,24 @@ def write_us_cards(workbook, cards):
         else:
             my_worksheet.column_dimensions[column_letter] = openpyxl.worksheet.ColumnDimension(width=my_width)
 
+    if len(cards) > cards_per_row:
+        my_height = 5
+
+        for i in list(range(1, len(list(range(cards_per_row, len(cards), cards_per_row))) + 1)):
+            row_idx = i * (USCard.ROW_HEIGHT + 1)
+            print(row_idx)
+            a_cell = my_worksheet.cell(row=row_idx - 1, column=0)
+            a_cell.value = 'here i am'
+            if row_idx in my_worksheet.row_dimensions:
+                print('exists')
+                my_worksheet.row_dimensions[row_idx].height = my_height
+            else:
+                print('exists not')
+                my_row_dimension = openpyxl.worksheet.RowDimension()
+                my_row_dimension.height = my_height
+                my_worksheet.row_dimensions[row_idx] = my_row_dimension
+
+
 
 class USCard():
 
