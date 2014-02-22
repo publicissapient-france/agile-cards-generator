@@ -109,6 +109,9 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
                     my_worksheet.row_dimensions[row_idx] = my_row_dimension
 
 
+    existing_us_worksheet = workbook.get_sheet_by_name(US_CARD_NAME)
+    if existing_us_worksheet:
+        workbook.remove_sheet(existing_us_worksheet)
     my_worksheet = deepcopy(workbook.get_sheet_by_name(US_CARD_NAME + TEMPLATE_SUFFIX))
     my_worksheet.title = US_CARD_NAME
     workbook.add_sheet(my_worksheet)
