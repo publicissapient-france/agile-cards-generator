@@ -176,8 +176,9 @@ class CardWorksheetProperties():
 
 class USCard():
 
-    def __init__(self, mmf='MMF:', feature='Feature:', project='Projet:', size='Taille', title='Titre de la US',
+    def __init__(self, id='ID:', mmf='MMF:', feature='Feature:', project='Projet:', size='Taille', title='Titre de la US',
                           date_backlog='Date backlog:', date_dev='Date dev:', date_done='Date done'):
+        self.id = id
         self.mmf = mmf
         self.feature = feature
         self.project = project
@@ -196,7 +197,9 @@ def load_cards(workbook):
         if not header_row_handled:
             header_row_handled = True
         else:
-            new_card = USCard(mmf=row[0].value, feature=row[1].value, project=row[2].value, size=row[3].value, title=row[4].value, date_backlog=row[5].value, date_dev=row[6].value, date_done=row[7].value)
+            new_card = USCard(id=row[0].value, mmf=row[1].value, feature=row[2].value, project=row[3].value,
+                              size=row[4].value, title=row[5].value, date_backlog=row[6].value, date_dev=row[7].value,
+                              date_done=row[8].value)
             us_cards.append(new_card)
 
     return ProjectCardsData(us_cards)
