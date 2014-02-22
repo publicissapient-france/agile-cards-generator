@@ -81,10 +81,36 @@ def write_us_card(card, worksheet, starting_row, vertical_position=0, horizontal
 
 
 def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
-    us_worksheet_name = 'US'
 
-    my_worksheet = deepcopy(workbook.get_sheet_by_name(us_worksheet_name + ' Template'))
-    my_worksheet.title = us_worksheet_name
+
+    def set_intermediate_columns_width(cards_per_row, my_worksheet):
+        for i in range(1, cards_per_row):
+            column_letter = get_column_letter(i * (USCard.COLUMN_WIDTH + 1))
+            column_width = float(1)
+
+            if column_letter in my_worksheet.column_dimensions:
+                my_worksheet.column_dimensions[column_letter].width = column_width
+            else:
+                my_worksheet.column_dimensions[column_letter] = openpyxl.worksheet.ColumnDimension(width=column_width)
+
+
+    def set_intermediate_rows_height(cards, cards_per_row, my_worksheet, row_height, starting_row):
+        if len(cards) > cards_per_row:
+            for i in list(range(1, len(list(range(cards_per_row, len(cards), cards_per_row))) + 1)):
+                row_idx = i * (USCard.ROW_HEIGHT + 1) + starting_row
+
+                my_worksheet.cell(row=row_idx - 1, column=0).value = ' '
+
+                if row_idx in my_worksheet.row_dimensions:
+                    my_worksheet.row_dimensions[row_idx].height = row_height
+                else:
+                    my_row_dimension = openpyxl.worksheet.RowDimension()
+                    my_row_dimension.height = row_height
+                    my_worksheet.row_dimensions[row_idx] = my_row_dimension
+
+
+    my_worksheet = deepcopy(workbook.get_sheet_by_name(US_CARD_NAME + TEMPLATE_SUFFIX))
+    my_worksheet.title = US_CARD_NAME
     workbook.add_sheet(my_worksheet)
 
     cards = project_cards_data.us_cards
@@ -92,6 +118,7 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
     vertical_position = 0
     horizontal_position = 0
     cards_per_row = 2
+    row_height = 5
     starting_row = card_worksheets_properties.us_properties.nb_settings_rows
 
     for card in cards:
@@ -101,29 +128,9 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
             horizontal_position = 0
             vertical_position += 1
 
-    for i in range(1, cards_per_row):
-        column_letter = get_column_letter(i * (USCard.COLUMN_WIDTH + 1))
-        column_width = float(1)
+    set_intermediate_columns_width(cards_per_row, my_worksheet)
 
-        if column_letter in my_worksheet.column_dimensions:
-            my_worksheet.column_dimensions[column_letter].width = column_width
-        else:
-            my_worksheet.column_dimensions[column_letter] = openpyxl.worksheet.ColumnDimension(width=column_width)
-
-    if len(cards) > cards_per_row:
-        row_height = 5
-
-        for i in list(range(1, len(list(range(cards_per_row, len(cards), cards_per_row))) + 1)):
-            row_idx = i * (USCard.ROW_HEIGHT + 1) + starting_row
-            a_cell = my_worksheet.cell(row=row_idx - 1, column=0)
-            a_cell.value = ' '
-            if row_idx in my_worksheet.row_dimensions:
-                my_worksheet.row_dimensions[row_idx].height = row_height
-            else:
-                my_row_dimension = openpyxl.worksheet.RowDimension()
-                my_row_dimension.height = row_height
-                my_worksheet.row_dimensions[row_idx] = my_row_dimension
-
+    set_intermediate_rows_height(cards, cards_per_row, my_worksheet, row_height, starting_row)
 
 
 class ProjectCardsData():
@@ -136,10 +143,12 @@ class CardWorksheetsProperties():
     def __init__(self, us_properties):
         self.us_properties = us_properties
 
+
 class CardWorksheetProperties():
     def __init__(self, nb_settings_rows = 0, lines_of_cards_per_page = 5):
         self.nb_settings_rows = nb_settings_rows
         self.lines_of_cards_per_page = lines_of_cards_per_page
+
 
 class USCard():
 
@@ -207,9 +216,19 @@ def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards_data, car
 
         lines_of_card = len(list(range(2, len(project_cards.us_cards), 2))) + 1
         nb_of_page_breaks = len(list(range(lines_of_cards_per_page, lines_of_card, lines_of_cards_per_page)))
+
         for i in range(1, nb_of_page_breaks + 1):
             page_break_row_idx = i * ((lines_of_cards_per_page + 1) * USCard.ROW_HEIGHT + 2) + nb_settings_rows
             my_worksheet.page_breaks.append(page_break_row_idx)
+
+
+    def hide_settings_rows(card_worksheets_properties, my_us_worksheet):
+        rows_idx = range(card_worksheets_properties.us_properties.nb_settings_rows)
+        for row_idx in rows_idx:
+            row_first_cell = my_us_worksheet.cell(row=row_idx, column=0)
+            if not row_first_cell.value:
+                row_first_cell.value = ' '
+            my_us_worksheet.row_dimensions[row_idx + 1].visible = False
 
 
     my_us_worksheet = my_workbook.get_sheet_by_name(us_worksheet_name)
@@ -218,6 +237,7 @@ def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards_data, car
     set_page_setup(my_us_worksheet)
     set_page_margins(my_us_worksheet)
     add_page_breaks(my_us_worksheet, project_cards_data, card_worksheets_properties)
+    hide_settings_rows(card_worksheets_properties, my_us_worksheet)
 
 
 def main():
