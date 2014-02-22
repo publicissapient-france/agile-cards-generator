@@ -242,7 +242,7 @@ def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards_data, car
 
 def main():
     output_file_name = prepare_output_file(None, 'xlsx')
-    input_file_name = os.path.join('input', 'input.xlsx')
+    input_file_name = os.path.join('test-input-file', 'input.xlsx')
 
     my_workbook = openpyxl.load_workbook(input_file_name)
 
