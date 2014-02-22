@@ -157,6 +157,10 @@ def main():
     my_us_worksheet.page_setup.fitToPage = True
     my_us_worksheet.page_setup.fitToHeight = 0
 
+    my_us_worksheet.page_margins.left = 0.1
+    my_us_worksheet.page_margins.right = 0.1
+    my_us_worksheet.page_margins.top = 0.1
+    my_us_worksheet.page_margins.bottom = 0.1
 
     my_workbook.save(output_file_name)
 
