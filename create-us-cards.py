@@ -122,7 +122,7 @@ def write_us_cards(workbook, project_cards_data, card_worksheets_properties):
 
     vertical_position = 0
     horizontal_position = 0
-    cards_per_row = 2
+    cards_per_row = card_worksheets_properties.us_properties.cards_per_rows
     row_height = 5
     starting_row = card_worksheets_properties.us_properties.nb_settings_rows
 
