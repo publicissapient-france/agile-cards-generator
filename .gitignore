@@ -24,4 +24,6 @@ build/
 objects.inv
 __pycache__
 *.iml
+lib/*
+
 

@@ -4,6 +4,10 @@ from openpyxl.cell import coordinate_from_string, column_index_from_string, get_
 import openpyxl
 import datetime
 from copy import deepcopy
+import uuid
+import tempfile
+import StringIO
+
 import csv
 
 US_CARD_NAME = 'US'
@@ -323,7 +327,7 @@ def setup_worksheet_page(my_workbook, us_worksheet_name, project_cards_data, car
 
 def main():
     output_file_name = prepare_output_file(None, 'xlsx')
-    input_file_name = os.path.join('test-input-file', 'input.xlsx')
+    input_file_name = os.path.join('../test-input-file', 'input.xlsx')
 
     my_workbook = openpyxl.load_workbook(input_file_name)
 
@@ -342,6 +346,28 @@ def main():
     print(text)
 
 
+def generate_output_file(input_file_name):
+    #output_file = tempfile.TemporaryFile(suffix=".xlsx")
+    output_file = StringIO.StringIO()
+
+    my_workbook = openpyxl.load_workbook(input_file_name)
+
+    project_cards_data = load_cards(my_workbook)
+
+    card_worksheets_properties = extract_cards_worksheet_properties(my_workbook)
+
+    write_us_cards(my_workbook, project_cards_data, card_worksheets_properties)
+
+    setup_worksheet_page(my_workbook, US_CARD_NAME, project_cards_data, card_worksheets_properties)
+
+    my_workbook.save(output_file)
+
+    text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
+    print(text)
+
+    return output_file
+
+
 def prepare_output_file(output_file, extension):
     file_name = None
     if output_file is not None:
@@ -351,7 +377,7 @@ def prepare_output_file(output_file, extension):
 
     output_path = 'output'
     if not os.path.isdir(output_path):
-        os.makedirs(output_path, exist_ok=True)
+        os.makedirs(output_path)
     file_name = os.path.join(output_path, file_name)
 
     if os.path.isfile(file_name):
@@ -359,6 +385,3 @@ def prepare_output_file(output_file, extension):
 
     return file_name
 
-
-if __name__ == "__main__":
-    main()
