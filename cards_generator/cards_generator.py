@@ -7,6 +7,7 @@ from copy import deepcopy
 import uuid
 import tempfile
 import StringIO
+import logging
 
 import csv
 
@@ -343,7 +344,7 @@ def main():
 
     text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
 
-    print(text)
+    logging.info(text)
 
 
 def generate_output_file(input_file_name):
@@ -363,7 +364,7 @@ def generate_output_file(input_file_name):
     my_workbook.save(output_file)
 
     text = 'Time at which file was generated: '+ datetime.datetime.now().__str__()
-    print(text)
+    logging.info(text)
 
     return output_file
 
