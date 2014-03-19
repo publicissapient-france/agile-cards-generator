@@ -1,0 +1,5 @@
+# To start the Google App Engine local instance
+dev_appserver.py .
+
+# To deploy the app on web (Google App Engine)
+appcfg.py --oauth2 update .
